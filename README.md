@@ -18,8 +18,8 @@ import { blockStore as lucyStore } from "@dstanesc/lucy-block-store"
 
 const ipfsClient = ...
 const azClient = ...
-const s1 = azureStore({ azClient })
-const s2 = ipfsStore({ ipfsClient })
+const s1 = azureStore({ containerClient: azClient })
+const s2 = ipfsStore({ ipfs: ipfsClient })
 const s3 = ...
 const { put, get } = blockStore({ acks: 'all' }, s1, s2, s3)
 ```

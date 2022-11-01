@@ -1,7 +1,7 @@
 {
   "name": "@dstanesc/lucy-block-store",
   "description": "Blocks are everywhere. Structural resilience, performance and high availability. Censorship resistant. Store content-addressable blocks redundantly, across technologies and providers. Providers compete on retrieval, fastest wins.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/dstanesc/lucy-block-store",
   "repository": "https://github.com/dstanesc/lucy-block-store",
   "license": "(Apache-2.0 AND MIT)",
