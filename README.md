@@ -13,14 +13,16 @@ get: (cid: any) => Promise<Uint8Array>
 
 ```ts
 import { blockStore as azureStore } from "@dstanesc/az-block-store"
+import { blockStore as awsStore } from "@dstanesc/s3-block-store"
 import { blockStore as ipfsStore } from "@dstanesc/ipfs-block-store"
 import { blockStore as lucyStore } from "@dstanesc/lucy-block-store"
 
 const ipfsClient = ...
 const azClient = ...
+const awsS3 = ...
 const s1 = azureStore({ containerClient: azClient })
 const s2 = ipfsStore({ ipfs: ipfsClient })
-const s3 = ...
+const s3 = awsStore({ s3: awsS3, bucket })
 const { put, get } = blockStore({ acks: 'all' }, s1, s2, s3)
 ```
 

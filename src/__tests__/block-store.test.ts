@@ -7,20 +7,24 @@ import { blockStore } from "../index"
 import { v1 as uuid } from "uuid"
 import * as assert from "assert"
 
+import { blockStore as awsStore } from "@dstanesc/s3-block-store"
 import { blockStore as azureStore } from "@dstanesc/az-block-store"
 import { blockStore as ipfsStore } from "@dstanesc/ipfs-block-store"
 
 import { create as ipfsApi } from 'ipfs-http-client'
+import AWS, { S3 } from 'aws-sdk'
 
 const RECORD_COUNT = 100
 const RECORD_SIZE_BYTES = 36
 
+let awsS3: S3
+let bucket: string
 let containerClient: ContainerClient
 let ipfs
 
 beforeEach(() => {
   //ipfs
-  ipfs = ipfsApi({ url: '/ip4/192.168.1.231/tcp/5001' })
+  ipfs = ipfsApi({ url: process.env.IPFS_API })
   //az
   dotenv.config();
   const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME
@@ -31,6 +35,12 @@ beforeEach(() => {
   const randomContainerName = `test-${uuid()}`
   containerClient = blobServiceClient.getContainerClient(randomContainerName)
   const createPromise = containerClient.create()
+
+  const awsRegion = process.env.AWS_REGION
+  bucket = process.env.AWS_BUCKET_NAME
+  AWS.config.update({ region: awsRegion });
+  awsS3 = new AWS.S3()
+
   return Promise.all([createPromise])
 })
 
@@ -45,8 +55,10 @@ test("demo lucy cas usage in the context of @dstanesc/store-chunky-bytes", async
   const s1 = azureStore({ /*cache,*/ containerClient })
   // store 2
   const s2 = ipfsStore({ /*cache,*/ ipfs })
+  // store 3
+  const s3 = awsStore({ /*cache,*/ s3: awsS3, bucket })
   // await all stores for put acks
-  const lucy_all = blockStore({ acks: 'all' }, s1, s2)
+  const lucy_all = blockStore({ acks: 'all' }, s1, s2, s3)
   //check w/ store-chunky-bytes
   await check(lucy_all)
 });
@@ -70,13 +82,15 @@ async function check({ get, put }) {
   }
 
   // read back a slice of data from the az-block-store
+  const startTime = new Date().getTime();
   const retrieved = await retrieve(read, 0, 10, RECORD_SIZE_BYTES, {
     root,
     decode,
     get,
   });
+  const endTime = new Date().getTime();
   console.log(retrieved);
-
+  console.log(`Time ${endTime - startTime}`);
   assert.equal(retrieved.length, 10);
   assert.deepEqual(records.slice(0, 10), retrieved);
 }
